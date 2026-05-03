@@ -147,9 +147,11 @@ export function createAdaptiveSelector(storageKey?: string) {
   };
 
   const persistHistorical = async (): Promise<void> => {
-    if (persistInFlight) {
-      persistQueued = true;
-      return;
+    
+void localforage.setItem(persistKey, {
+  version: 2,
+  weights: Object.fromEntries(Array.from(characterWeights.entries()))
+});
     }
 
     do {
@@ -232,9 +234,10 @@ export function createAdaptiveSelector(storageKey?: string) {
     },
   ): number => {
     const attempts = correct + wrong;
-    const accuracy =
-      (correct + priorCorrect) / (attempts + priorCorrect + priorWrong);
-    return clamp(1 + (neutralAccuracy - accuracy) * scale, minWeight, maxWeight);
+  
+const accuracy = correct / (attempts || 1); 
+
+return clamp(1 + (1.0 - accuracy) * 10, 0.01, 10.0);
   };
 
   // Calculate adaptive weight for a character
@@ -569,7 +572,6 @@ export function createAdaptiveSelector(storageKey?: string) {
     registerQuestionFormatResult,
     getPreferredLockedFormat,
   };
-}
 
 // Type for the adaptive selector instance
 export type AdaptiveSelector = ReturnType<typeof createAdaptiveSelector>;
